@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon</title>
+    <!-- Importing 'Barlow Condensed' which closely resembles Valve's DIN font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --text-color: #e0e0e0;
+            --glow-color: rgba(255, 255, 255, 0.6);
+            --mystic-accent: rgba(100, 149, 237, 0.2); /* Faint Cornflower Blue */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Changed to Barlow Condensed for that clean, industrial Valve look */
+            font-family: 'Barlow Condensed', sans-serif;
+        }
+
+        /* Canvas for the background particles */
+        #canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Container for the text to handle the floating animation */
+        .container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        h1 {
+            color: transparent;
+            font-size: clamp(3rem, 10vw, 7rem); /* Slightly larger for the blocky font */
+            font-weight: 800; /* Bold weight for impact */
+            letter-spacing: 0.2em; /* Tighter spacing than Cinzel, but still spaced for drama */
+            text-transform: uppercase;
+            margin: 0;
+            padding: 0;
+            
+            /* The Mystic Text Effect */
+            background: linear-gradient(180deg, #fff 0%, #777 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            
+            text-shadow: 
+                0 0 10px var(--glow-color),
+                0 0 40px var(--mystic-accent);
+            
+            animation: mystic-pulse 4s ease-in-out infinite alternate;
+            opacity: 0; /* Starts invisible for fade-in */
+            animation-fill-mode: forwards; /* Keeps it visible after fade-in */
+            
+            /* Combine Fade In + Pulse */
+            animation: 
+                fadeIn 2s ease-out forwards,
+                mystic-pulse 5s ease-in-out infinite alternate 2s; /* Delay pulse until faded in */
+        }
+
+        .dots span {
+            opacity: 0;
+            animation: dot-fade 1.5s infinite;
+        }
+
+        .dots span:nth-child(1) { animation-delay: 0.0s; }
+        .dots span:nth-child(2) { animation-delay: 0.5s; }
+        .dots span:nth-child(3) { animation-delay: 1.0s; }
+
+        /* A subtle line under the text */
+        .separator {
+            width: 0%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, white, transparent);
+            margin: 20px auto 0;
+            opacity: 0.5;
+            animation: expand-line 2s ease-out forwards 1s;
+        }
+
+        /* --- ANIMATIONS --- */
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes mystic-pulse {
+            0% {
+                text-shadow: 
+                    0 0 10px rgba(255,255,255,0.3),
+                    0 0 20px rgba(255,255,255,0.1);
+                filter: blur(0.5px);
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px rgba(255,255,255,0.8),
+                    0 0 50px rgba(100, 149, 237, 0.4),
+                    0 0 80px rgba(100, 149, 237, 0.2);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes expand-line {
+            to { width: 60%; }
+        }
+
+        @keyframes dot-fade {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Fog overlay for extra depth */
+        .fog {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(20,20,30,0.4) 0%, rgba(0,0,0,0) 70%);
+            z-index: 5;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+    <div class="fog"></div>
+
+    <div class="container">
+        <h1>Coming Soon<span class="dots"><span>.</span><span>.</span><span>.</span></span></h1>
+        <div class="separator"></div>
+    </div>
+
+    <script>
+        // BACKGROUND PARTICLE SYSTEM
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 60; // Number of particles
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+                // Randomize initial y to spread them out on load
+                this.y = Math.random() * canvas.height;
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 10;
+                // Very slow upward movement
+                this.speed = Math.random() * 0.5 + 0.1;
+                // Random size
+                this.size = Math.random() * 2 + 0.5;
+                // Random opacity
+                this.opacity = Math.random() * 0.5;
+                this.fadeSpeed = Math.random() * 0.005 + 0.002;
+                this.fadingIn = true;
+            }
+
+            update() {
+                this.y -= this.speed;
+
+                // Gentle horizontal drift (sine wave)
+                this.x += Math.sin(this.y * 0.01) * 0.2;
+
+                // Opacity pulsing
+                if (this.fadingIn) {
+                    this.opacity += this.fadeSpeed;
+                    if (this.opacity >= 0.5) this.fadingIn = false;
+                } else {
+                    this.opacity -= this.fadeSpeed;
+                    if (this.opacity <= 0) {
+                        this.reset();
+                    }
+                }
+
+                // Reset if off screen
+                if (this.y < -10) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Initialize particles
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+
+</body>
+</html>
